@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Net;
 using System.Net.Http;
 using UnityEngine;
 
@@ -59,16 +58,17 @@ namespace HK_Sparkler
                 duration = 1f,
             };
 
+            string body = JsonUtility.ToJson(req);
+
             var sparkleRequest = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
                 RequestUri = new Uri(httpClient.BaseAddress + "sparkle"),
                 Headers =
                 {
-                    { HttpRequestHeader.ContentType.ToString(), "application/json" },
                     { "secret", secret },
                 },
-                Content = new StringContent(JsonUtility.ToJson(req)),
+                Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json"),
             };
 
             httpClient.SendAsync(sparkleRequest);

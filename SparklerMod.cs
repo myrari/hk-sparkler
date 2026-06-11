@@ -30,24 +30,37 @@ namespace HK_Sparkler
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
-            if (Instance == null)
-            {
-                Log("Initializing");
+            Log("Initializing");
 
-                HttpClient = new HttpClient
+            HttpClient = new HttpClient
+            {
+                BaseAddress = new Uri("https://sparkler.myrari.net"),
+            };
+
+            Secret = null;
+
+            Instance = this;
+
+            // add damage hook
+            ModHooks.AfterTakeDamageHook += AfterTakeDamage;
+
+            Log("Initialized");
+        }
+
+        public int AfterTakeDamage(int _, int damageAmount)
+        {
+            if (damageAmount > 0)
+            {
+                if (Secret != null)
                 {
-                    BaseAddress = new Uri("https://sparkler.myrari.net"),
-                };
+                    LogFine("sending sparkle request for " + damageAmount);
 
-                Secret = null;
-
-                Instance = this;
-
-                Log("Initialized");
-            } else
-            {
-                Log("Already initialized!");
+                    SparklerAPI.Sparkle(HttpClient, Secret, damageAmount);
+                }
             }
+
+            // dont change damage amount
+            return damageAmount;
         }
     }
 }

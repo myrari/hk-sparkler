@@ -113,6 +113,8 @@ namespace HK_Sparkler
                                             logger.Log("got secret: " + res.secret);
 
                                             responseLabel.text = "Succesfully paired!";
+
+                                            HK_Sparkler.Instance.Secret = res.secret;
                                         }
                                         else
                                         {
