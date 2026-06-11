@@ -328,7 +328,4 @@
     <None Include="ReadMe.md" />
     <None Include="Resources\.gitignore" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="System.Net.Http.Json" Version="10.0.9" />
-  </ItemGroup>
 </Project>

@@ -2,11 +2,6 @@
 using Modding.Menu;
 using Modding.Menu.Config;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -48,9 +43,9 @@ namespace HK_Sparkler
 
         public static MenuBuilder CreateMenuScreen(MenuScreen modListMenu)
         {
-            SimpleLogger logger = new SimpleLogger("hk-sparkler");
+            SimpleLogger logger = new("hk-sparkler");
 
-            Action<MenuSelectable> goBack = selectable => UIManager.instance.UIGoToDynamicMenu(modListMenu);
+            void goBack(MenuSelectable selectable) => UIManager.instance.UIGoToDynamicMenu(modListMenu);
             return new MenuBuilder(UIManager.instance.UICanvas.gameObject, "Sparkler")
                 .CreateTitle("Sparkler", MenuTitleStyle.vanillaStyle)
                 .CreateContentPane(
@@ -76,19 +71,26 @@ namespace HK_Sparkler
                     RegularGridLayout.CreateVerticalLayout(105f),
                     c =>
                     {
-                        c.AddTextPanel("SparklerPairingCodeLabel", new RelVector2(new Vector2(960, 64f)), new TextPanelConfig
+                        c.AddTextPanel("SparklerPairingCodeLabel", new RelVector2(new Vector2(960f, 64f)), new TextPanelConfig
                         {
                             Text = "Input Pairing Code:",
                             Font = TextPanelConfig.TextFont.TrajanBold,
                             Size = 48,
                             Anchor = TextAnchor.MiddleCenter,
                         })
-                        .AddTextInputPanel("SparklerPairingCodeInput", new RelVector2(new Vector2(960, 64f)), new TextInputPanelConfig
+                        .AddTextInputPanel("SparklerPairingCodeInput", new RelVector2(new Vector2(960f, 64f)), new TextInputPanelConfig
                         {
                             Text = "...",
                             Size = 32,
                             Anchor = TextAnchor.MiddleCenter,
                         }, out var pairingCodeInput)
+                        .AddTextPanel("SparklerPairingResponseLabel", new RelVector2(new Vector2(960f, 64f)), new TextPanelConfig
+                        {
+                            Text = "",
+                            Font = TextPanelConfig.TextFont.TrajanRegular,
+                            Size = 40,
+                            Anchor = TextAnchor.MiddleCenter,
+                        }, out var responseLabel)
                         .AddMenuButton(
                             "SparklerPairingButton",
                             new MenuButtonConfig
@@ -98,7 +100,27 @@ namespace HK_Sparkler
                                 Proceed = false,
                                 SubmitAction = _ =>
                                 {
-                                    logger.Log("pairing code: " + pairingCodeInput.text);
+                                    responseLabel.StartCoroutine(SparklerAPI.Pair(HK_Sparkler.Instance.HttpClient, pairingCodeInput.text, res =>
+                                    {
+                                        if (res.error != null)
+                                        {
+                                            logger.LogError("failed to pair! " + res.error);
+
+                                            responseLabel.text = "Error: " + res.error;
+                                        }
+                                        else if (res.secret != null)
+                                        {
+                                            logger.Log("got secret: " + res.secret);
+
+                                            responseLabel.text = "Succesfully paired!";
+                                        }
+                                        else
+                                        {
+                                            logger.LogError("pairing got no error, but no secret!");
+
+                                            responseLabel.text = "Pairing failed!";
+                                        }
+                                    }));
                                 }
                             }
                         );
@@ -118,7 +140,7 @@ namespace HK_Sparkler
                         {
                             Label = "Back",
                             CancelAction = goBack,
-                            SubmitAction = goBack,
+                            SubmitAction = (Action<MenuSelectable>)goBack,
                             Style = MenuButtonStyle.VanillaStyle,
                             Proceed = true,
                         }

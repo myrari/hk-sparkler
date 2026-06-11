@@ -1,58 +1,77 @@
 ﻿using System;
+using System.Collections;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Threading.Tasks;
+using UnityEngine;
 
 namespace HK_Sparkler
 {
     public static class SparklerAPI
     {
-        public record class PairResponse(
-            string? Secret,
-            string? Error
-        );
+        [Serializable]
+        public class PairResponse
+        {
+            public string secret;
+            public string error;
+        }
 
-        public static async Task<PairResponse> Pair(HttpClient httpClient, string pairingCode)
+        public static IEnumerator Pair(HttpClient httpClient, string pairingCode, Action<PairResponse> callback)
         {
             var pairRequest = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri(httpClient.BaseAddress + "/auth"),
+                RequestUri = new Uri(httpClient.BaseAddress + "auth"),
                 Headers =
-                {
-                    { "pairing-code", pairingCode },
-                },
+                    {
+                        { "pairing-code", pairingCode },
+                    },
             };
 
-            var pairResponse = await httpClient.SendAsync(pairRequest);
+            var pairResponse = httpClient.SendAsync(pairRequest);
 
-            return await pairResponse.Content.ReadFromJsonAsync<PairResponse>();
+            while (!(pairResponse.IsCompleted || pairResponse.IsFaulted))
+            {
+                yield return null;
+            }
+
+            var pairBody = pairResponse.Result.Content.ReadAsStringAsync();
+
+            while (!(pairBody.IsCompleted || pairBody.IsFaulted))
+            {
+                yield return null;
+            }
+
+            callback(JsonUtility.FromJson<PairResponse>(pairBody.Result));
         }
 
-        public record class SparkleRequest(
-            float Intensity,
-            float Duration
-        );
-
-        public static async Task<int> Sparkle(HttpClient httpClient, string secret, float damage)
+        [Serializable]
+        public class SparkleRequest
         {
-            float intensity = damage * 25;
+            public float intensity;
+            public float duration;
+        }
+
+        public static void Sparkle(HttpClient httpClient, string secret, float damage)
+        {
+            SparkleRequest req = new()
+            {
+                intensity = damage * 25,
+                duration = 1f,
+            };
 
             var sparkleRequest = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri(httpClient.BaseAddress + "/sparkle"),
+                RequestUri = new Uri(httpClient.BaseAddress + "sparkle"),
                 Headers =
                 {
                     { HttpRequestHeader.ContentType.ToString(), "application/json" },
                     { "secret", secret },
                 },
-                Content = new StringContent(JsonSerializer.Serialize(new SparkleRequest(intensity, 1.0f))),
+                Content = new StringContent(JsonUtility.ToJson(req)),
             };
 
-            return (int)(await httpClient.SendAsync(sparkleRequest)).StatusCode;
+            httpClient.SendAsync(sparkleRequest);
         }
     }
 }

@@ -1,17 +1,18 @@
 ﻿using Modding;
-using Modding.Menu;
-using Modding.Menu.Config;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Net.Http;
 using UnityEngine;
-using UObject = UnityEngine.Object;
 
 namespace HK_Sparkler
 {
-    public class HK_Sparkler : Mod, ITogglableMod, ICustomMenuMod
+    public class HK_Sparkler : Mod, ICustomMenuMod
     {
         internal static HK_Sparkler Instance;
+
+        public HttpClient HttpClient;
+
+        public string Secret;
 
         public HK_Sparkler() : base("hk-sparkler")
         {
@@ -29,13 +30,24 @@ namespace HK_Sparkler
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
-            Log("Initializing");
+            if (Instance == null)
+            {
+                Log("Initializing");
 
-            Instance = this;
+                HttpClient = new HttpClient
+                {
+                    BaseAddress = new Uri("https://sparkler.myrari.net"),
+                };
 
-            Log("Initialized");
+                Secret = null;
+
+                Instance = this;
+
+                Log("Initialized");
+            } else
+            {
+                Log("Already initialized!");
+            }
         }
-
-        public void Unload() { }
     }
 }
