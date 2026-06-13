@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!-- Change this to the path of your modded HK installation -->
-    <HollowKnightRefs>C:\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed</HollowKnightRefs>
+	  <HollowKnightRefs>/home/myra/.local/share/Steam/steamapps/common/Hollow Knight/hollow_knight_Data/Managed</HollowKnightRefs>
     <!-- Change this to the path where you want the ready-to-upload exports to be -->
-    <ExportDir>C:\Users\myra\projects\hollow_knight\hk-sparkler\__Exports\</ExportDir>
+	  <ExportDir>/home/myra/personal/hk-sparkler/__Exports/</ExportDir>
     <!-- Uncomment this to generate a documentation file to be included with the mod -->
     <!-- <DocumentationFile>$(OutputPath)/$(AssemblyTitle).xml</DocumentationFile> -->
   </PropertyGroup>

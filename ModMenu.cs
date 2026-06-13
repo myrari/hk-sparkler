@@ -45,7 +45,7 @@ namespace HK_Sparkler
         {
             SimpleLogger logger = new("hk-sparkler");
 
-            void goBack(MenuSelectable selectable) => UIManager.instance.UIGoToDynamicMenu(modListMenu);
+            void goBack(MenuSelectable _) => UIManager.instance.UIGoToDynamicMenu(modListMenu);
             return new MenuBuilder(UIManager.instance.UICanvas.gameObject, "Sparkler")
                 .CreateTitle("Sparkler", MenuTitleStyle.vanillaStyle)
                 .CreateContentPane(
